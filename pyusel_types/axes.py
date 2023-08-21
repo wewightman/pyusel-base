@@ -77,7 +77,7 @@ class DataAxisSet(ABC):
         if isinstance(value, int):
             return self.__getattribute__(self.labels[value])
         elif isinstance(value, str):
-            return self['value']
+            return self.__getattribute__(value)
         elif isinstance(value, slice):
             if value.start is None: value.start = 0
             if value.stop is None: value.stop = self.N
