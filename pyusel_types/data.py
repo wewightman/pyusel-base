@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class RawData(ABC):
+class DataSet(ABC):
     @classmethod
     @abstractmethod
     def getaxes(self):
@@ -20,6 +20,6 @@ class RawData(ABC):
     
     @classmethod
     @abstractmethod
-    def data(self, *args, **kwargs):
+    def rawdata(self, *args, **kwargs):
         raise NotImplementedError
     
