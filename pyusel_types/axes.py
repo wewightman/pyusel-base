@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import Any
+import numpy as np
 
 class DataAxis(ABC):
     @classmethod
@@ -15,6 +17,16 @@ class DataAxis(ABC):
     @abstractmethod
     def __getitem__(self, i:int):
         raise NotImplementedError
+    
+    def __iter__(self):
+        self.iter.i = 0
+        return self
+    
+    def __next__(self):
+        if self.iter.i >= self.N: raise StopIteration
+        val = self[self.iter.i]
+        self.iter.i += 1
+        return val
 
 class SampledDataAxis(DataAxis):
     def __init__(self, start, delta, N:int):
@@ -31,12 +43,16 @@ class SampledDataAxis(DataAxis):
             if not hasattr(self, value): raise IndexError("key must be points or N")
             return self.__getattribute__(value)
         elif isinstance(value, slice):
-            if value.start is None: value.start = 0
-            if value.stop is None: value.stop = self.N
-            if value.step is None: value.step = 1
-            return [self[i] for i in range(value.start, value.stop, value.step)]
+            start = int(0) if value.start is None else int(value.start)
+            stop = self.N if value.stop is None else int(value.stop)
+            if stop > self.N: raise IndexError
+            step = int(1) if value.step is None else int(value.step)
+            newstart = self[start]
+            newN = (stop-start)//step
+            newstep = step*self.delta
+            return SampledDataAxis(newstart, newstep, newN)
         elif isinstance(value, tuple):
-            return [self[val] for val in value]
+            return ArbitraryDataAxis([self[val] for val in value if isinstance(val, int)])
         else:
             raise IndexError(f"Unable to parse argument: {str(value)}")
         
@@ -54,16 +70,17 @@ class ArbitraryDataAxis(DataAxis):
             if (value < 0) or (value >= self.N): raise IndexError("i must be between 0 and N-1")
             return self.points[value]
         elif isinstance(value, str):
-            if not hasattr(self, value): raise IndexError("key must be points or N")
+            if not hasattr(self, value): raise IndexError("when indexing with a string, key must be points or N")
             return self.__getattribute__(value)
         elif isinstance(value, slice):
-            start = 0 if value.start is None else value.start
-            stop = self.N if value.stop is None else value.stop
-            step = 1 if value.step is None else value.step
+            start = int(0) if value.start is None else int(value.start)
+            stop = len(self) if value.stop is None else int(value.stop)
+            if stop > self.N: raise IndexError
+            step = int(1) if value.step is None else int(value.step)
             
-            return [self[i] for i in range(value.start, value.stop, value.step)]
+            return ArbitraryDataAxis([self[i] for i in range(start, stop, step)])
         elif isinstance(value, tuple):
-            return [self[val] for val in value]
+            return ArbitraryDataAxis([self[val] for val in value])
         else:
             raise IndexError(f"Unable to parse argument: {str(value)}")
         
@@ -86,6 +103,9 @@ class DataAxisSet(ABC):
     
     def __len__(self):
         return len(self.keys)
+    
+    def __contains__(self, arg:str):
+        return True if arg in self.keys else False
 
     def __getitem__(self, value):
         if isinstance(value, int):
@@ -93,9 +113,10 @@ class DataAxisSet(ABC):
         elif isinstance(value, str):
             return self.__getattribute__(value)
         elif isinstance(value, slice):
-            start = 0 if value.start is None else value.start
-            stop = self.N if value.stop is None else value.stop
-            step = 1 if value.step is None else value.step
+            start = int(0) if value.start is None else int(value.start)
+            stop = len(self) if value.stop is None else int(value.stop)
+            if stop > len(self): raise IndexError
+            step = int(1) if value.step is None else int(value.step)
 
             datas = [self[i] for i in range(start, stop, step)]
             labels = [self.keys[i] for i in range(start, stop, step)]
@@ -105,7 +126,7 @@ class DataAxisSet(ABC):
         elif isinstance(value, tuple):
             datas = []
             labels = []
-            for val in value:
+            for iv, val in enumerate(value):
                 if isinstance(val, int):
                     datas.append(self.__getattribute__(self.keys[val]))
                     labels.append(self.keys[val])
@@ -117,5 +138,21 @@ class DataAxisSet(ABC):
             return DataAxisSet(**dict(zip(labels, datas)))
         else:
             raise IndexError("Indexing variables must be an int, a slice, or sting")
+        
+    def __iter__(self):
+        if hasattr(self, 'iter'): delattr(self, 'iter')
+        self.iter = {}
+        self.iter['N'] = len(self.shape)
+        self.iter['i'] = 0
+        return self
+    
+    def __next__(self):
+        i = self.iter['i']
+        N = self.iter['N']
+        if i == N: raise StopIteration
+        key = self.keys[i]
+        ax = self.__getattribute__(self.keys[i])
+        return key, ax
+
         
             
