@@ -156,3 +156,9 @@ class CData(Data):
 
     def __extract__(self, value):
         raise NotImplementedError
+
+class DataSet(ABC):
+    @classmethod
+    @abstractmethod
+    def transform(self, data):
+        raise NotImplementedError
