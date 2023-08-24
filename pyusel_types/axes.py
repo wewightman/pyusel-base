@@ -24,7 +24,6 @@ class DataAxis(ABC):
 
 class SampledDataAxis(DataAxis):
     def __init__(self, start, delta, N:int):
-        if N == 1: return start
         if N <= 0: raise ValueError("Must have at least 1 point in set")
         self.start=start
         self.delta=delta
@@ -63,7 +62,6 @@ class ArbitraryDataAxis(DataAxis):
     def __init__(self, points):
         if np.ndim(points) == 0: return points
         elif np.ndim(points) > 1: raise ValueError("input points must be 1D")
-        if len(points) == 1: return points[0]
         self.points=points
         self.N=len(points)
     
