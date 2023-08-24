@@ -27,47 +27,50 @@ def test_set_iter_vec(dset):
     dset.set_iter("ax0")
     _iter = iter(dset)
     assert 2 == _iter.iter['Nax'] - _iter.iter['axinc']['ninc']
-    assert tuple(_iter.iter['strides']) == (4, 1)
+    assert tuple(_iter.iter['strides']) == (3, 4,)
     for i in range(3):
         out1 = next(_iter)
-        for i in range(out1.shape[0]): 
-            assert out1.__extract__(i) == 0
+        for j in range(out1.shape[0]): 
+            assert out1.__extract__(j) == i
     assert _iter.iter['axinc']['ninc'] == 1
     assert list(_iter.iter['axinc']['vals'].keys())[0] == "ax0"
     assert isinstance(out1, Data)
     assert isinstance(out1, NumpyData)
     assert len(out1.shape) == 1
-    assert _iter.iter['I'] == 3+1
+    assert _iter.iter['I'] == 3
 
-    for i in range(3): 
+    assert 2 == _iter.iter['Nax'] - _iter.iter['axinc']['ninc']
+    assert tuple(_iter.iter['strides']) == (3, 4,)
+    for i in range(3):
         out1 = next(_iter)
-        assert tuple(_iter.iter['strides']) == (4, 1)
-        for i in range(out1.shape[0]): 
-            assert out1.__extract__(i) == 1
+        for j in range(out1.shape[0]): 
+            assert out1.__extract__(j) == i
     assert isinstance(out1, Data)
     assert isinstance(out1, NumpyData)
     assert len(out1.shape) == 1
-    assert _iter.iter['I'] == 6+1
+    assert _iter.iter['I'] == 6
 
-    for i in range(3): 
+    assert 2 == _iter.iter['Nax'] - _iter.iter['axinc']['ninc']
+    assert tuple(_iter.iter['strides']) == (3, 4,)
+    for i in range(3):
         out1 = next(_iter)
-        assert tuple(_iter.iter['strides']) == (4, 1)
-        for i in range(out1.shape[0]): 
-            assert out1.__extract__(i) == 2
+        for j in range(out1.shape[0]): 
+            assert out1.__extract__(j) == i
     assert isinstance(out1, Data)
     assert isinstance(out1, NumpyData)
     assert len(out1.shape) == 1
-    assert _iter.iter['I'] == 9+1
-    
-    for i in range(3): 
+    assert _iter.iter['I'] == 9
+
+    assert 2 == _iter.iter['Nax'] - _iter.iter['axinc']['ninc']
+    assert tuple(_iter.iter['strides']) == (3, 4,)
+    for i in range(3):
         out1 = next(_iter)
-        assert tuple(_iter.iter['strides']) == (4, 1)
-        for i in range(out1.shape[0]): 
-            assert out1.__extract__(i) == 3
+        for j in range(out1.shape[0]): 
+            assert out1.__extract__(j) == i
     assert isinstance(out1, Data)
     assert isinstance(out1, NumpyData)
     assert len(out1.shape) == 1
-    assert _iter.iter['I'] == 12+1
+    assert _iter.iter['I'] == 12
 
     try:
         next(_iter)
@@ -89,7 +92,7 @@ def test_set_iter_mat(dset):
     for i in range(out1.shape[0]):
         for j in range(out1.shape[1]):
             assert out1.__extract__((i, j)) == 0
-    assert tuple(_iter.iter['strides']) == (1,)
+    assert tuple(_iter.iter['strides']) == (4,)
 
     out1 = next(_iter)
     assert isinstance(out1, Data)
@@ -100,7 +103,7 @@ def test_set_iter_mat(dset):
     for i in range(out1.shape[0]):
         for j in range(out1.shape[1]):
             assert out1.__extract__((i, j)) == 1
-    assert tuple(_iter.iter['strides']) == (1,)
+    assert tuple(_iter.iter['strides']) == (4,)
 
     out1 = next(_iter)
     assert isinstance(out1, Data)
@@ -111,7 +114,7 @@ def test_set_iter_mat(dset):
     for i in range(out1.shape[0]):
         for j in range(out1.shape[1]):
             assert out1.__extract__((i, j)) == 2
-    assert tuple(_iter.iter['strides']) == (1,)
+    assert tuple(_iter.iter['strides']) == (4,)
 
     out1 = next(_iter)
     assert isinstance(out1, Data)
@@ -122,7 +125,7 @@ def test_set_iter_mat(dset):
     for i in range(out1.shape[0]):
         for j in range(out1.shape[1]):
             assert out1.__extract__((i, j)) == 3
-    assert tuple(_iter.iter['strides']) == (1,)
+    assert tuple(_iter.iter['strides']) == (4,)
 
     assert _iter.iter['Ntot'] == 4
 
@@ -143,7 +146,7 @@ def test_set_iter_mat(dset):
     for i in range(out1.shape[0]):
         for j in range(out1.shape[1]):
             assert out1.__extract__((i, j)) == j
-    assert tuple(_iter.iter['strides']) == (1,)
+    assert tuple(_iter.iter['strides']) == (3,)
 
     out1 = next(_iter)
     assert isinstance(out1, Data)
@@ -154,7 +157,7 @@ def test_set_iter_mat(dset):
     for i in range(out1.shape[0]):
         for j in range(out1.shape[1]):
             assert out1.__extract__((i, j)) == j
-    assert tuple(_iter.iter['strides']) == (1,)
+    assert tuple(_iter.iter['strides']) == (3,)
 
     out1 = next(_iter)
     assert isinstance(out1, Data)
@@ -165,7 +168,7 @@ def test_set_iter_mat(dset):
     for i in range(out1.shape[0]):
         for j in range(out1.shape[1]):
             assert out1.__extract__((i, j)) == j
-    assert tuple(_iter.iter['strides']) == (1,)
+    assert tuple(_iter.iter['strides']) == (3,)
 
     assert _iter.iter['Ntot'] == 3
 

@@ -21,7 +21,7 @@ class Data(ABC):
 
         if len(values) == 1 and isinstance(values[0], str):
             self.iter = {'axinc':{}}
-            self.iter = {'axinc':{'vals':{values:slice(None)}}}
+            self.iter = {'axinc':{'vals':{values[0]:slice(None)}}}
             self.iter['axinc']['ninc'] = 1
             return
     
@@ -68,13 +68,6 @@ class Data(ABC):
             if key not in self.iter['axinc']['vals'].keys():
                 strides.append(ax['N'])
 
-        strides_temp = []
-        for istr1 in range(Nexc):
-            stride = 1
-            for istr2 in range(istr1+1, Nexc):
-                stride *= strides[istr2]
-            strides_temp.append(stride)
-
         self.iter['strides'] = strides
         self.iter['I'] = 0
         self.iter['Ntot'] = Ntotal
@@ -82,13 +75,13 @@ class Data(ABC):
             
         return self 
     
-    def __get_item_axes__(self, value):
+    def __get_item_axes__(self, *value):
         just_strings = True
         just_ints = True
         ints_n_slice = True
 
-        if isinstance(value, str):
-            return DataAxisSet(**{value:self.axes[value]})
+        if len(value) == 1 and isinstance(value[0], str):
+            return DataAxisSet(**{value[0]:self.axes[value[0]]})
         
         for val in value:
             if not isinstance(val, str): just_strings = False
@@ -110,10 +103,10 @@ class Data(ABC):
         elif ints_n_slice:
             newaxes = {}
             for iv, val in enumerate(value):
-                if isinstance(val, slice):
-                    newaxes[self.axes.keys[iv]] = self.axes[iv][val]
+                if isinstance(val, slice): newaxes[self.axes.keys[iv]] = self.axes[iv][val]
             
-        return DataAxisSet(**newaxes)
+            return DataAxisSet(**newaxes)
+        else: raise IndexError(str(value))
     
     def __next__(self):
         if not hasattr(self, 'iter'):
@@ -129,25 +122,15 @@ class Data(ABC):
         # build slicer for N-dimensions not included in the iterable
         Nexc = Nax - axinc['ninc']
         if Nexc == 0: return self
-        elif Nexc == 1:
-            for i, (key, ax) in enumerate(self.axes):
-                if key in axinc['vals'].keys(): slicer.append(axinc['vals'][key])
-                else: slicer.append(I)
         
-        else:
-            curi = [0] * Nexc
-            for i in range(Nexc):
-                delta = I
-                for istr, stride in enumerate(strides[1:]): delta -= curi[istr] * stride
-                curi[i] = delta//strides[i]
-                
+        else: 
             iexc = 0
             for i, (key, ax) in enumerate(self.axes):
                 if key in axinc['vals'].keys(): slicer.append(axinc['vals'][key])
-                else: slicer.append(curi[iexc]); iexc += 1
+                else: slicer.append(int((I//np.prod(strides[(iexc+1):]))%strides[iexc])); iexc += 1
 
         _data = self.__extract__(slicer)
-        _axes = self.__get_item_axes__(slicer)
+        _axes = self.__get_item_axes__(*slicer)
 
         if isinstance(self, NumpyData): return NumpyData(_data, _axes)
         if isinstance(self, CData): return CData(_data, _axes)
