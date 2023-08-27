@@ -142,7 +142,7 @@ class NumpyData(Data):
         shape = []
         for id, dim in enumerate(data.shape):
             if len(axes[id]) != dim:
-                return ValueError("data and axes must have the same dimensions")
+                raise ValueError("data and axes must have the same dimensions")
             shape.append(dim)
         self.shape = tuple(shape)
 
